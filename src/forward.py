@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torchvision
-from torch.utils.data import DataLoader
+from torch.utils.data import ConcatDataset
 from torchvision import transforms
 import torch.nn.functional as F
 
@@ -14,10 +14,10 @@ class forward():
         alphas = 1. - betas
         alphas_cumprod = torch.cumprod(alphas, axis=0)
         alphas_cumprod_prev = F.pad(alphas_cumprod[:-1], (1, 0), value=1.0)
-        sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
-        sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
-        sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
-        posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
+        self.sqrt_recip_alphas = torch.sqrt(1.0 / alphas)
+        self.sqrt_alphas_cumprod = torch.sqrt(alphas_cumprod)
+        self.sqrt_one_minus_alphas_cumprod = torch.sqrt(1. - alphas_cumprod)
+        self.posterior_variance = betas * (1. - alphas_cumprod_prev) / (1. - alphas_cumprod)
 
     def get_index_from_list(vals, t, x_shape):
 
@@ -37,6 +37,7 @@ class forward():
 
 
     def load_trandformed_Dataset(self):
+
         data_transforms = transforms.Compose[
             transforms.Resize(self.img_size, self.img_size),
             transforms.RandomHorizontalFlip(),
@@ -50,4 +51,4 @@ class forward():
         test = torchvision.datasets.StanfordCars(root="/data", download=True,
                                          transform=data_transforms, split='test')
 
-        return torch.utils.data.ConcatDataset([train, test])
+        return ConcatDataset([train, test])
